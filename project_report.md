@@ -6,7 +6,7 @@
 To be able to submit our predictions, we cannot have negative values in our predicted values. Therefore, if it is the case we have to set the values to 0.
 
 ### What was the top ranked model that performed?
-The `WeightedEnsemble` ensemble model with `L2` regularisation was our best performing model.
+The `WeightedEnsemble` at the second stack level was our best performing model.
 
 ## Exploratory data analysis and feature creation
 ### What did the exploratory analysis find and how did you add additional features?
@@ -22,20 +22,18 @@ The model clearly performed better. We went from a RMSE on the train data of 53.
 went from 1.79390 to 0.42599. On the train data we have in average a 33% improvement of our model and on the test data a 23.74% improvement.
 ## Hyper parameter tuning
 ### How much better did your model preform after trying different hyper parameters?
-The model did not perform that better with the hyperparameter tuning. We did not tune per say the hyper parameters of the models because by chosing the presets  best_quality,
-the model was already tuning each models so that the best parameters were found. We just drop the KNN models because, they were not performing well in our use case and with our best model
-being the Ensemble model, we hope that by giving more computation time to the better performing model and having their output used without being dragged down by the KNN models, we will have
-a more robust model but it was not the case. On the test data, the RMSLE went from  0.42599 to 0.46288.
+The model did not perform that better with hyperparameter tuning. Indeed, the score on the test data went from  0.42599 to 0.43812. This is not that surprising as what make Autogluon that powerfull is that it's does not use CASH. The idea is that the more HPO we perform on the validation data, the more we introduce a biais in the model we are tuning as the different base models are then trying to be better and better on the validation data. We do reduce that case a lot with the use of k-fold bagging but it's still there. We can see that in effect in the fact that the hpo model do slightly better on the train data than the best model without it but in trade off do worst on the test data (-34.603943 vs -34.326635). Also, the idea behind Autogluon Tabular is to have a bunch of weak learners that by themselves are weak and full of random biais but when they come together in the ensemble models, they are better because they complete each other.
 ### If you were given more time with this dataset, where do you think you would spend more time?
 We could look into doing some feature engineering on the hour feature. We could put them in classes because to be fair we can clearly see that we could group some hours of the day to
 better reflect people use of bikes. This would be very helpfull for our tree base models that are the top performing ones for exemple. Also, we could look into training just on less models.
+We could also look into tuning but not for all models. We need weak learners.
 
 ### Create a table with the models you ran, the hyperparameters modified, and the kaggle score.
-|model|use_orig_features|max_base_models|max_base_models_per_type|save_bag_folds|excluded_model_types|score|
-|--|--|--|--|--|--|--|
-|initial|False|25|5|True|None|1.79390|
-|add_features|False|25|5|True|None|0.42599|
-|hpo|False|25|5|True|KNN|0.46288|
+|model|hyperparameters|hyperparameter_tune_kwargs|score|
+|--|--|--|--|
+|initial|default|None|1.79390|
+|add_features|default|None|0.42599|
+|hpo|default|auto|0.46288|
 ### Create a line plot showing the top model score for the three (or more) training runs during the project.
 
 ![model_train_score.png](model_train_score.png)
@@ -46,4 +44,5 @@ better reflect people use of bikes. This would be very helpfull for our tree bas
 
 ## Summary
 To summarize, the key to improve our model was the feature engineering of our object type variables and of the datetime variable. This helped us better narrow down the pattern of the bike renting which we could clearly see in
-the improvement of the performance of the model when the new features were added. Also, the best_quality presets is quite powerfull even with a small amount of time for the training.
+the improvement of the performance of the model when the new features were added. Also, the best_quality presets is quite powerfull even with a small amount of time for the training.  
+Also, even though HPO is powerfull, we should pay attention to not abuse it as it could introduce biais into our base models.
